@@ -1164,10 +1164,39 @@
             appId: "1:783262697780:web:ae60d58b6dce49aca3fd61"
         };
 
+	     // Protection contre les extensions
+    if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
+        console.error("Firebase corrompu par une extension");
+        loadFirebaseManually();
+        return;
+    }
+
+	    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+}
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
+
+	    function loadFirebaseManually() {
+    const script = document.createElement('script');
+    script.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
+    script.onload = () => {
+        const authScript = document.createElement('script');
+        authScript.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js";
+        document.head.appendChild(authScript);
+        
+        const dbScript = document.createElement('script');
+        dbScript.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js";
+        document.head.appendChild(dbScript);
+    };
+    document.head.appendChild(script);
+}
+
+// Appelez cette fonction au chargement
+window.addEventListener('DOMContentLoaded', initializeFirebase);
 
 	    database.ref('dossiers').on('value', (snapshot) => {
     console.log("Mise à jour reçue de Firebase"); // Debug
@@ -1305,12 +1334,41 @@
             const editBtn = row.querySelector('.edit-btn');
             const deleteBtn = row.querySelector('.delete-btn');
             
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                currentDossierId = id;
-                currentAction = 'edit';
-                openAuthModal();
-            });
+            // ★ NOUVEAU CODE (à mettre à la place) ★
+editBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    currentDossierId = id; // Conserve l'ID du dossier
+    
+    try {
+        // 1. Authentification
+        const user = firebase.auth().currentUser;
+        const password = prompt("Veuillez confirmer votre mot de passe pour modifier:");
+        
+        if (!password) return;
+        
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
+        await user.reauthenticateWithCredential(credential);
+        
+        // 2. Chargement des données
+        const dossierSnapshot = await database.ref(`dossiers/${id}`).once('value');
+        const dossier = dossierSnapshot.val();
+        
+        // 3. Ouverture du modal d'édition
+        if (dossier) {
+            document.getElementById('dossier-number').value = dossier.number;
+            document.getElementById('dossier-name').value = dossier.name;
+            document.getElementById('client-name').value = dossier.clientName;
+            document.getElementById('audience-date').value = formatDateTimeForInput(dossier.audienceDate);
+            // ... autres champs
+            
+            dossierModal.classList.add('active'); // Ouvre le modal
+        }
+        
+    } catch (error) {
+        console.error("Erreur complète:", error);
+        alert(`Échec de l'authentification : ${error.message}`);
+    }
+});
             
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
