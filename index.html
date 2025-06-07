@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Cabinet - Gestion des Dossiers</title>
+    <title>Cabinet - Gestion des Dossiers</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -1153,7 +1153,7 @@
     </div>
 
     <script>
-      // Firebase Configuration
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBsP4Dhhu1VN5rFEg5saGy4buIq5Fle-44",
             authDomain: "essai-avocat.firebaseapp.com",
@@ -1168,7 +1168,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-        
+
         // DOM Elements
         const loginSection = document.getElementById('login-section');
         const appContainer = document.getElementById('app-container');
@@ -1300,20 +1300,12 @@
             const editBtn = row.querySelector('.edit-btn');
             const deleteBtn = row.querySelector('.delete-btn');
             
-           if (editBtn) {
-    editBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentDossierId = id;
-        currentAction = 'edit';
-        database.ref('dossiers/' + id).once('value').then(snapshot => {
-            const dossier = snapshot.val();
-            if (dossier) {
-                openAuthModal(dossier);
-            }
-        }).catch(error => {
-            console.error("Error fetching dossier:", error);
-        });
-    });
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentDossierId = id;
+                currentAction = 'edit';
+                openAuthModal();
+            });
             
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1538,13 +1530,9 @@
         }
 
         // Open auth modal
-        function openAuthModal(dossier = null) {
-    if (dossier) {
-        // Stocker le dossier temporairement
-        window.tempDossier = dossier;
-    }
-    authModal.classList.add('active');
-}
+        function openAuthModal() {
+            authModal.classList.add('active');
+        }
 
         // Close all modals
         function closeModals() {
@@ -1875,25 +1863,25 @@
                 password
             );
             
-           currentUser.reauthenticateWithCredential(credential)
-     .then(() => {
-        if (currentAction === 'edit') {
-            // Utiliser le dossier stocké temporairement
-            const dossier = window.tempDossier;
-            if (dossier) {
-                openDossierModal('edit', dossier);
-                delete window.tempDossier; // Nettoyer
-            }
-        } else if (currentAction === 'delete') {
-            deleteDossier(currentDossierId);
-        }
-        
-        authForm.reset();
-        closeModals();
-    })
-    .catch(error => {
-        alert("Erreur d'authentification: " + error.message);
-    });
+            currentUser.reauthenticateWithCredential(credential)
+                .then(() => {
+                    if (currentAction === 'edit') {
+                        database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
+                            const dossier = snapshot.val();
+                            if (dossier) {
+                                openDossierModal('edit', dossier);
+                            }
+                        });
+                    } else if (currentAction === 'delete') {
+                        deleteDossier(currentDossierId);
+                    }
+                    
+                    authForm.reset();
+                    closeModals();
+                })
+                .catch(error => {
+                    alert("Erreur d'authentification: " + error.message);
+                });
         });
 
         // Search functionality
@@ -1912,6 +1900,6 @@
         if ("Notification" in window) {
             Notification.requestPermission();
         }
- </script>
+    </script>
 </body>
 </html>
