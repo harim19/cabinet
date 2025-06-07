@@ -1900,29 +1900,6 @@
         if ("Notification" in window) {
             Notification.requestPermission();
         }
-		
-		// Blocage du clic droit + message
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            document.body.classList.add('show-message');
-            setTimeout(() => {
-                document.body.classList.remove('show-message');
-            }, 3000);
-        });
-
-        // Blocage des touches F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-                (e.ctrlKey && e.shiftKey && e.key === 'J') || 
-                (e.ctrlKey && e.key === 'U')) {
-                e.preventDefault();
-                document.body.classList.add('show-message');
-                setTimeout(() => {
-                    document.body.classList.remove('show-message');
-                }, 3000);
-            }
-        });
-    </script>
+ </script>
 </body>
 </html>
