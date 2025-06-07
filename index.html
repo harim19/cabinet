@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-Security-Policy" content="script-src 'self' https://www.gstatic.com;">
     <title>Cabinet - Gestion des Dossiers</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -1153,8 +1154,30 @@
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
+        // 1. Protection contre l'erreur 'query' + initialisation sécurisée
+try {
+    // Vérifie que Firebase est chargé ET qu'il n'y a pas de conflit d'extensions
+    if (typeof firebase === 'undefined' || 
+        (typeof firebase.query !== 'undefined' && !firebase.apps)) {
+        console.error("Conflit détecté avec une extension Chrome ou Firebase non chargé");
+        // Solution de repli - recharge proprement Firebase
+        const firebaseScript = document.createElement('script');
+        firebaseScript.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
+        document.head.appendChild(firebaseScript);
+        
+        firebaseScript.onload = () => {
+            initFirebase(); // Voir fonction ci-dessous
+        };
+    } else {
+        initFirebase();
+    }
+} catch (error) {
+    console.error("Erreur d'initialisation Firebase:", error);
+}
+
+// 2. Fonction séparée pour une initialisation propre
+function initFirebase() {
+    const firebaseConfig = {
             apiKey: "AIzaSyBsP4Dhhu1VN5rFEg5saGy4buIq5Fle-44",
             authDomain: "essai-avocat.firebaseapp.com",
             databaseURL: "https://essai-avocat-default-rtdb.firebaseio.com",
@@ -1165,10 +1188,17 @@
         };
 
         // Initialize Firebase
+        if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
-
+		}
+    
+    // Vos variables Firebase
+    window.auth = firebase.auth();
+    window.database = firebase.database();
+    
+    console.log("Firebase initialisé avec succès");
+}
+        
         // DOM Elements
         const loginSection = document.getElementById('login-section');
         const appContainer = document.getElementById('app-container');
