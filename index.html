@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cabinet - Gestion des Dossiers</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-red: #ff073a;
+            --neon-dark: #1a1a1a;
+            --neon-blue: #00f7ff;
+            --neon-purple: #bc13fe;
+            --bg-dark: #0a0a20;
+            --bg-darker: #050510;
+            --text-light: #e0e0ff;
+            --text-lighter: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .futuristic-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Login Section */
+        #login-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background: rgba(10, 10, 30, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.2);
+            z-index: 1;
+            border: 1px solid var(--neon-blue);
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-red), var(--neon-blue), var(--neon-purple), var(--neon-red));
+            background-size: 400%;
+            z-index: -1;
+            border-radius: 12px;
+            animation: borderGlow 8s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--neon-blue);
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(20, 20, 40, 0.7);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            color: var(--text-light);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .login-input:focus {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, var(--neon-red), var(--neon-purple));
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-red)));
+            box-shadow: 0 0 15px var(--neon-red);
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Main App Container */
+        #app-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            background: rgba(10, 10, 30, 0.9);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.1);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            letter-spacing: 2px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--neon-blue);
+            object-fit: cover;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: var(--neon-red);
+            color: white;
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        /* Navigation */
+        .app-nav {
+            display: flex;
+            background: rgba(5, 5, 15, 0.9);
+            border-bottom: 1px solid rgba(0, 247, 255, 0.2);
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .nav-tab:hover {
+            color: var(--neon-blue);
+        }
+
+        .nav-tab.active {
+            color: var(--neon-red);
+            background: rgba(255, 7, 58, 0.1);
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            padding: 20px;
+            min-height: calc(100vh - 120px);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Dashboard Section */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-bar {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            background: rgba(20, 20, 40, 0.7);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            color: var(--text-light);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-blue);
+        }
+
+        .add-btn {
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-btn:hover {
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        /* Dossiers Table */
+        .dossiers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background: rgba(15, 15, 35, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .dossiers-table th {
+            background: rgba(255, 7, 58, 0.3);
+            color: var(--neon-blue);
+            padding: 15px;
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--neon-blue);
+        }
+
+        .dossiers-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.1);
+            vertical-align: middle;
+        }
+
+        .dossiers-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dossiers-table tr:hover {
+            background: rgba(0, 247, 255, 0.05);
+        }
+
+        .dossier-row {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dossier-row.active {
+            background: rgba(0, 247, 255, 0.1);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-new {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: lime;
+            animation: pulse 2s infinite;
+        }
+
+        .status-renvoi {
+            background-color: rgba(255, 255, 0, 0.2);
+            color: yellow;
+            animation: pulse 2s infinite;
+        }
+
+        .status-standby {
+            background-color: rgba(255, 165, 0, 0.2);
+            color: orange;
+            animation: pulse 2s infinite;
+        }
+
+        .status-urgent {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: var(--neon-red);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .dossier-row.active .action-buttons {
+            opacity: 1;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .edit-btn {
+            background: rgba(0, 247, 255, 0.2);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+        }
+
+        .edit-btn:hover {
+            background: rgba(0, 247, 255, 0.4);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .delete-btn {
+            background: rgba(255, 7, 58, 0.2);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 7, 58, 0.4);
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        /* Dossier Details */
+        .dossier-details {
+            background: rgba(15, 15, 35, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--neon-blue);
+            display: none;
+        }
+
+        .dossier-details.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.2);
+        }
+
+        .details-title {
+            color: var(--neon-blue);
+            font-size: 1.3rem;
+        }
+
+        .details-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            margin-bottom: 10px;
+        }
+
+        .detail-label {
+            color: var(--neon-blue);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .detail-value {
+            background: rgba(20, 20, 40, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 2px solid var(--neon-red);
+        }
+
+        /* Tasks Section */
+        .tasks-section {
+            background: rgba(15, 15, 35, 0.7);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .tasks-title {
+            color: var(--neon-blue);
+            font-size: 1.2rem;
+        }
+
+        .add-task-btn {
+            background: rgba(0, 247, 255, 0.2);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-task-btn:hover {
+            background: rgba(0, 247, 255, 0.4);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(20, 20, 40, 0.7);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--neon-purple);
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .complete-btn, .delete-task-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .complete-btn {
+            background: rgba(0, 255, 0, 0.2);
+            color: lime;
+            border: 1px solid lime;
+        }
+
+        .complete-btn:hover {
+            background: rgba(0, 255, 0, 0.4);
+        }
+
+        .delete-task-btn {
+            background: rgba(255, 7, 58, 0.2);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+        }
+
+        .delete-task-btn:hover {
+            background: rgba(255, 7, 58, 0.4);
+        }
+
+        /* History Section */
+        .history-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .export-btn, .import-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-btn {
+            background: rgba(0, 247, 255, 0.2);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+        }
+
+        .export-btn:hover {
+            background: rgba(0, 247, 255, 0.4);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .import-btn {
+            background: rgba(255, 255, 0, 0.2);
+            color: yellow;
+            border: 1px solid yellow;
+        }
+
+        .import-btn:hover {
+            background: rgba(255, 255, 0, 0.4);
+            box-shadow: 0 0 10px yellow;
+        }
+
+        /* Archive Section */
+        .archive-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .clear-archive-btn {
+            padding: 10px 20px;
+            background: rgba(255, 7, 58, 0.2);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clear-archive-btn:hover {
+            background: rgba(255, 7, 58, 0.4);
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-dark);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            position: relative;
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 30px var(--neon-blue);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: var(--neon-red);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-title {
+            color: var(--neon-blue);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--neon-blue);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(20, 20, 40, 0.7);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            color: var(--text-light);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .form-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .form-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: 1px solid var(--text-light);
+        }
+
+        .form-btn.cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-btn.submit {
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            color: white;
+        }
+
+        .form-btn.submit:hover {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue)));
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        /* Auth Modal */
+        .auth-modal .modal-content {
+            max-width: 400px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            background: rgba(20, 20, 40, 0.7);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            color: var(--text-light);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-bar {
+                width: 100%;
+            }
+            
+            .details-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tab {
+                padding: 15px;
+                font-size: 0.8rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                margin: 0 15px;
+            }
+        }
+
+        /* Heartbeat Animation */
+        .heartbeat {
+            animation: heartbeat 1.5s ease-in-out infinite both;
+        }
+
+        @keyframes heartbeat {
+            from {
+                transform: scale(1);
+                transform-origin: center center;
+                animation-timing-function: ease-out;
+            }
+            10% {
+                transform: scale(0.91);
+                animation-timing-function: ease-in;
+            }
+            17% {
+                transform: scale(0.98);
+                animation-timing-function: ease-out;
+            }
+            33% {
+                transform: scale(0.87);
+                animation-timing-function: ease-in;
+            }
+            45% {
+                transform: scale(1);
+                animation-timing-function: ease-out;
+            }
+        }
+
+        /* Neon Border */
+        .neon-border {
+            position: relative;
+        }
+
+        .neon-border::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: inherit;
+            background: linear-gradient(45deg, var(--neon-red), var(--neon-blue), var(--neon-purple), var(--neon-red));
+            background-size: 400%;
+            z-index: -1;
+            animation: borderGlow 8s linear infinite;
+            opacity: 0.7;
+        }
+		
+		/* Message personnalisé pour le clic droit */
+        body::after {
+            content: "Attention! ce site est protégé, on a votre adress IP, on peut vous poursuivre.";
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff6347;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 9999;
+        }
+        
+        body.show-message::after {
+            bottom: 20px;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <section id="login-section">
+        <div class="login-container neon-border">
+            <h1 class="login-title futuristic-font">Mon Cabinet</h1>
+            <form id="login-form">
+                <input type="email" id="login-email" class="login-input" placeholder="Email" required>
+                <input type="password" id="login-password" class="login-input" placeholder="Mot de passe" required>
+                <button type="submit" class="login-btn heartbeat">
+                    <i class="fas fa-sign-in-alt"></i> Connexion
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Main App Container -->
+    <div id="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo futuristic-font">LegalFlow</div>
+            <div class="user-info">
+                <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
+                <span id="username-display">Utilisateur</span>
+                <button id="logout-btn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="app-nav">
+            <div class="nav-tab active" data-target="dashboard-section">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </div>
+            <div class="nav-tab" data-target="history-section">
+                <i class="fas fa-history"></i> Historique
+            </div>
+            <div class="nav-tab" data-target="archive-section">
+                <i class="fas fa-archive"></i> Archive
+            </div>
+        </nav>
+
+        <!-- Content Sections -->
+        <main>
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="dashboard-header">
+                    <div class="search-bar">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="search-input" class="search-input" placeholder="Rechercher un dossier...">
+                    </div>
+                    <button id="add-dossier-btn" class="add-btn">
+                        <i class="fas fa-plus"></i> Nouveau Dossier
+                    </button>
+                </div>
+
+                <table class="dossiers-table">
+                    <thead>
+                        <tr>
+                            <th>N° Dossier</th>
+                            <th>Nom du Dossier</th>
+                            <th>Date Audience</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dossiers-list">
+                        <!-- Dossiers will be loaded here dynamically -->
+                    </tbody>
+                </table>
+
+                <!-- Dossier Details -->
+                <div id="dossier-details" class="dossier-details">
+                    <div class="details-header">
+                        <h3 class="details-title">Détails du Dossier</h3>
+                    </div>
+                    <div class="details-content" id="dossier-details-content">
+                        <!-- Details will be loaded here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tasks Section -->
+                <div class="tasks-section">
+                    <div class="tasks-header">
+                        <h3 class="tasks-title"><i class="fas fa-tasks"></i> Tâches à accomplir</h3>
+                        <button id="add-task-btn" class="add-task-btn">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                    <ul class="task-list" id="tasks-list">
+                        <!-- Tasks will be loaded here dynamically -->
+                    </ul>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section id="history-section" class="content-section">
+                <div class="history-actions">
+                    <button id="export-btn" class="export-btn">
+                        <i class="fas fa-file-export"></i> Sauvegarder
+                    </button>
+                    <button id="import-btn" class="import-btn">
+                        <i class="fas fa-file-import"></i> Importer
+                    </button>
+                </div>
+                <table class="dossiers-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Utilisateur</th>
+                            <th>Action</th>
+                            <th>Détails</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-list">
+                        <!-- History will be loaded here dynamically -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Archive Section -->
+            <section id="archive-section" class="content-section">
+                <div class="archive-actions">
+                    <button id="clear-archive-btn" class="clear-archive-btn">
+                        <i class="fas fa-trash"></i> Vider l'Archive
+                    </button>
+                </div>
+                <table class="dossiers-table">
+                    <thead>
+                        <tr>
+                            <th>N° Dossier</th>
+                            <th>Nom du Dossier</th>
+                            <th>Date Archive</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="archive-list">
+                        <!-- Archived dossiers will be loaded here dynamically -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add/Edit Dossier Modal -->
+    <div id="dossier-modal" class="modal">
+        <div class="modal-content neon-border">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title" id="dossier-modal-title">Nouveau Dossier</h2>
+            <form id="dossier-form">
+                <div class="form-group">
+                    <label for="dossier-number" class="form-label">Numéro de Dossier</label>
+                    <input type="text" id="dossier-number" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="dossier-name" class="form-label">Nom du Dossier</label>
+                    <input type="text" id="dossier-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="client-name" class="form-label">Nom du Client</label>
+                    <input type="text" id="client-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="client-phone" class="form-label">Téléphone</label>
+                    <input type="tel" id="client-phone" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="client-email" class="form-label">Email</label>
+                    <input type="email" id="client-email" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="audience-date" class="form-label">Date d'Audience</label>
+                    <input type="datetime-local" id="audience-date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="dossier-status" class="form-label">Statut</label>
+                    <select id="dossier-status" class="form-input">
+                        <option value="new">Nouveau</option>
+                        <option value="pending">En cours</option>
+                        <option value="standby">Standby</option>
+                        <option value="postponed">Renvoi</option>
+                        <option value="closed">Clôturé</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dossier-notes" class="form-label">Notes</label>
+                    <textarea id="dossier-notes" class="form-input" rows="4"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="form-btn cancel">Annuler</button>
+                    <button type="submit" class="form-btn submit">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content neon-border">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">Nouvelle Tâche</h2>
+            <form id="task-form">
+                <div class="form-group">
+                    <label for="task-title" class="form-label">Titre</label>
+                    <input type="text" id="task-title" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="task-description" class="form-label">Description</label>
+                    <textarea id="task-description" class="form-input" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task-deadline" class="form-label">Échéance</label>
+                    <input type="date" id="task-deadline" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="task-assignee" class="form-label">Assigné à</label>
+                    <select id="task-assignee" class="form-input">
+                        <!-- Will be populated with team members -->
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="form-btn cancel">Annuler</button>
+                    <button type="submit" class="form-btn submit">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Auth Modal (for edit/delete actions) -->
+    <div id="auth-modal" class="modal auth-modal">
+        <div class="modal-content neon-border">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">Authentification Requise</h2>
+            <form id="auth-form">
+                <input type="password" id="auth-password" class="auth-input" placeholder="Votre mot de passe" required>
+                <div class="form-actions">
+                    <button type="button" class="form-btn cancel">Annuler</button>
+                    <button type="submit" class="form-btn submit">Confirmer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="modal">
+        <div class="modal-content neon-border">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">Importer des Données</h2>
+            <form id="import-form">
+                <div class="form-group">
+                    <label for="import-file" class="form-label">Fichier JSON</label>
+                    <input type="file" id="import-file" class="form-input" accept=".json" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="form-btn cancel">Annuler</button>
+                    <button type="submit" class="form-btn submit">Importer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBsP4Dhhu1VN5rFEg5saGy4buIq5Fle-44",
+            authDomain: "essai-avocat.firebaseapp.com",
+            databaseURL: "https://essai-avocat-default-rtdb.firebaseio.com",
+            projectId: "essai-avocat",
+            storageBucket: "essai-avocat.firebasestorage.app",
+            messagingSenderId: "783262697780",
+            appId: "1:783262697780:web:ae60d58b6dce49aca3fd61"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // DOM Elements
+        const loginSection = document.getElementById('login-section');
+        const appContainer = document.getElementById('app-container');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const usernameDisplay = document.getElementById('username-display');
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const contentSections = document.querySelectorAll('.content-section');
+
+        // Dashboard Elements
+        const dossiersList = document.getElementById('dossiers-list');
+        const dossierDetails = document.getElementById('dossier-details');
+        const dossierDetailsContent = document.getElementById('dossier-details-content');
+        const searchInput = document.getElementById('search-input');
+        const addDossierBtn = document.getElementById('add-dossier-btn');
+
+        // Tasks Elements
+        const tasksList = document.getElementById('tasks-list');
+        const addTaskBtn = document.getElementById('add-task-btn');
+
+        // History Elements
+        const historyList = document.getElementById('history-list');
+        const exportBtn = document.getElementById('export-btn');
+        const importBtn = document.getElementById('import-btn');
+
+        // Archive Elements
+        const archiveList = document.getElementById('archive-list');
+        const clearArchiveBtn = document.getElementById('clear-archive-btn');
+
+        // Modals
+        const dossierModal = document.getElementById('dossier-modal');
+        const taskModal = document.getElementById('task-modal');
+        const authModal = document.getElementById('auth-modal');
+        const importModal = document.getElementById('import-modal');
+        const modalCloseBtns = document.querySelectorAll('.modal-close');
+        const cancelBtns = document.querySelectorAll('.form-btn.cancel');
+
+        // Form Elements
+        const dossierForm = document.getElementById('dossier-form');
+        const taskForm = document.getElementById('task-form');
+        const authForm = document.getElementById('auth-form');
+        const importForm = document.getElementById('import-form');
+
+        // App State
+        let currentUser = null;
+        let currentDossierId = null;
+        let currentAction = null; // 'edit', 'delete', etc.
+
+        // Initialize App
+        function initApp() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    usernameDisplay.textContent = user.email.split('@')[0];
+                    loginSection.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    loadData();
+                    checkUpcomingAudiences();
+                } else {
+                    currentUser = null;
+                    loginSection.style.display = 'flex';
+                    appContainer.style.display = 'none';
+                }
+            });
+        }
+
+        // Load all data from Firebase
+        function loadData() {
+            loadDossiers();
+            loadTasks();
+            loadHistory();
+            loadArchive();
+        }
+
+        // Load dossiers from Firebase
+        function loadDossiers() {
+            database.ref('dossiers').orderByChild('audienceDate').on('value', snapshot => {
+                dossiersList.innerHTML = '';
+                snapshot.forEach(childSnapshot => {
+                    const dossier = childSnapshot.val();
+                    createDossierRow(childSnapshot.key, dossier);
+                });
+            });
+        }
+
+        // Create a dossier row in the table
+        function createDossierRow(id, dossier) {
+            const row = document.createElement('tr');
+            row.className = 'dossier-row';
+            row.dataset.id = id;
+            
+            // Determine status badge
+            let statusBadge = '';
+            if (dossier.status === 'new') {
+                statusBadge = '<span class="status-badge status-new">New</span>';
+            } else if (dossier.status === 'postponed') {
+                statusBadge = '<span class="status-badge status-renvoi">Renvoi</span>';
+            } else if (dossier.status === 'standby') {
+                statusBadge = '<span class="status-badge status-standby">Standby</span>';
+            } else if (isUpcomingAudience(dossier.audienceDate)) {
+                statusBadge = '<span class="status-badge status-urgent">Urgent</span>';
+            }
+
+            row.innerHTML = `
+                <td>${dossier.number}</td>
+                <td>${dossier.name}</td>
+                <td>${formatDate(dossier.audienceDate)}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="edit-btn" data-id="${id}">
+                            <i class="fas fa-edit"></i> Modifier
+                        </button>
+                        <button class="delete-btn" data-id="${id}">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            // Add click event to show details
+            row.addEventListener('click', () => {
+                document.querySelectorAll('.dossier-row').forEach(r => r.classList.remove('active'));
+                row.classList.add('active');
+                showDossierDetails(id, dossier);
+            });
+
+            // Add edit/delete button events
+            const editBtn = row.querySelector('.edit-btn');
+            const deleteBtn = row.querySelector('.delete-btn');
+            
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentDossierId = id;
+                currentAction = 'edit';
+                openAuthModal();
+            });
+            
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentDossierId = id;
+                currentAction = 'delete';
+                openAuthModal();
+            });
+
+            dossiersList.appendChild(row);
+        }
+
+        // Show dossier details
+        function showDossierDetails(id, dossier) {
+            dossierDetails.classList.add('active');
+            
+            const audienceDate = new Date(dossier.audienceDate);
+            const now = new Date();
+            const diffTime = audienceDate - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let reminderText = '';
+            if (diffDays > 0 && diffDays <= 7) {
+                reminderText = `Audience dans ${diffDays} jour(s)`;
+            } else if (diffDays <= 0) {
+                reminderText = `Audience aujourd'hui ou passée`;
+            }
+
+            dossierDetailsContent.innerHTML = `
+                <div class="detail-item">
+                    <span class="detail-label">Numéro de Dossier</span>
+                    <div class="detail-value">${dossier.number}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Nom du Dossier</span>
+                    <div class="detail-value">${dossier.name}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Client</span>
+                    <div class="detail-value">${dossier.clientName}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Téléphone</span>
+                    <div class="detail-value">${dossier.clientPhone || 'Non renseigné'}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Email</span>
+                    <div class="detail-value">${dossier.clientEmail || 'Non renseigné'}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Date d'Audience</span>
+                    <div class="detail-value">${formatDate(dossier.audienceDate)} ${reminderText ? `<span style="color: var(--neon-red);">(${reminderText})</span>` : ''}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Statut</span>
+                    <div class="detail-value">${getStatusText(dossier.status)}</div>
+                </div>
+                <div class="detail-item" style="grid-column: 1 / -1">
+                    <span class="detail-label">Notes</span>
+                    <div class="detail-value">${dossier.notes || 'Aucune note'}</div>
+                </div>
+            `;
+        }
+
+        // Load tasks from Firebase
+        function loadTasks() {
+            database.ref('tasks').on('value', snapshot => {
+                tasksList.innerHTML = '';
+                snapshot.forEach(childSnapshot => {
+                    const task = childSnapshot.val();
+                    createTaskItem(childSnapshot.key, task);
+                });
+            });
+        }
+
+        // Create a task item
+        function createTaskItem(id, task) {
+            const item = document.createElement('li');
+            item.className = 'task-item';
+            item.dataset.id = id;
+            
+            item.innerHTML = `
+                <div class="task-info">
+                    <h4>${task.title}</h4>
+                    <p>${task.description || ''}</p>
+                    ${task.deadline ? `<small>Échéance: ${formatDate(task.deadline)}</small>` : ''}
+                </div>
+                <div class="task-actions">
+                    <button class="complete-btn" data-id="${id}">
+                        <i class="fas fa-check"></i> Terminer
+                    </button>
+                    <button class="delete-task-btn" data-id="${id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            // Add button events
+            const completeBtn = item.querySelector('.complete-btn');
+            const deleteBtn = item.querySelector('.delete-task-btn');
+            
+            completeBtn.addEventListener('click', () => completeTask(id));
+            deleteBtn.addEventListener('click', () => deleteTask(id));
+
+            tasksList.appendChild(item);
+        }
+
+        // Load history from Firebase
+        function loadHistory() {
+            database.ref('history').orderByChild('timestamp').limitToLast(50).on('value', snapshot => {
+                historyList.innerHTML = '';
+                snapshot.forEach(childSnapshot => {
+                    const historyItem = childSnapshot.val();
+                    createHistoryRow(historyItem);
+                });
+            });
+        }
+
+        // Create history row
+        function createHistoryRow(item) {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${formatDateTime(item.timestamp)}</td>
+                <td>${item.userEmail}</td>
+                <td>${item.action}</td>
+                <td>${item.details || ''}</td>
+            `;
+
+            historyList.appendChild(row);
+        }
+
+        // Load archive from Firebase
+        function loadArchive() {
+            database.ref('archive').orderByChild('archivedDate').limitToLast(50).on('value', snapshot => {
+                archiveList.innerHTML = '';
+                snapshot.forEach(childSnapshot => {
+                    const archivedDossier = childSnapshot.val();
+                    createArchiveRow(childSnapshot.key, archivedDossier);
+                });
+            });
+        }
+
+        // Create archive row
+        function createArchiveRow(id, dossier) {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${dossier.number}</td>
+                <td>${dossier.name}</td>
+                <td>${formatDate(dossier.archivedDate)}</td>
+                <td>
+                    <button class="delete-btn" data-id="${id}">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </td>
+            `;
+
+            // Add delete button event
+            const deleteBtn = row.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => deleteFromArchive(id));
+
+            archiveList.appendChild(row);
+        }
+
+        // Check for upcoming audiences and show notifications
+        function checkUpcomingAudiences() {
+            database.ref('dossiers').once('value', snapshot => {
+                snapshot.forEach(childSnapshot => {
+                    const dossier = childSnapshot.val();
+                    if (isUpcomingAudience(dossier.audienceDate)) {
+                        showNotification(`Audience proche: ${dossier.name} (${formatDate(dossier.audienceDate)})`);
+                    }
+                });
+            });
+        }
+
+        // Show notification
+        function showNotification(message) {
+            if (!("Notification" in window)) {
+                console.log("This browser does not support desktop notification");
+                return;
+            }
+
+            if (Notification.permission === "granted") {
+                new Notification(message);
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification(message);
+                    }
+                });
+            }
+        }
+
+        // Open dossier modal for adding/editing
+        function openDossierModal(mode = 'add', dossier = null) {
+            const title = document.getElementById('dossier-modal-title');
+            const form = document.getElementById('dossier-form');
+            
+            if (mode === 'add') {
+                title.textContent = 'Nouveau Dossier';
+                form.reset();
+                currentDossierId = null;
+            } else if (mode === 'edit' && dossier) {
+                title.textContent = 'Modifier Dossier';
+                document.getElementById('dossier-number').value = dossier.number;
+                document.getElementById('dossier-name').value = dossier.name;
+                document.getElementById('client-name').value = dossier.clientName;
+                document.getElementById('client-phone').value = dossier.clientPhone || '';
+                document.getElementById('client-email').value = dossier.clientEmail || '';
+                document.getElementById('audience-date').value = formatDateTimeForInput(dossier.audienceDate);
+                document.getElementById('dossier-status').value = dossier.status;
+                document.getElementById('dossier-notes').value = dossier.notes || '';
+            }
+            
+            dossierModal.classList.add('active');
+        }
+
+        // Open task modal
+        function openTaskModal() {
+            taskModal.classList.add('active');
+        }
+
+        // Open auth modal
+        function openAuthModal() {
+            authModal.classList.add('active');
+        }
+
+        // Close all modals
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+
+        // Add a new dossier
+        function addDossier(dossierData) {
+            const newDossierRef = database.ref('dossiers').push();
+            newDossierRef.set(dossierData)
+                .then(() => {
+                    addHistoryItem('Ajout', `Nouveau dossier: ${dossierData.name}`);
+                    closeModals();
+                })
+                .catch(error => {
+                    console.error("Error adding dossier: ", error);
+                });
+        }
+
+        // Update a dossier
+        function updateDossier(id, dossierData) {
+            database.ref('dossiers/' + id).update(dossierData)
+                .then(() => {
+                    addHistoryItem('Modification', `Dossier modifié: ${dossierData.name}`);
+                    closeModals();
+                })
+                .catch(error => {
+                    console.error("Error updating dossier: ", error);
+                });
+        }
+
+        // Delete a dossier (move to archive)
+        function deleteDossier(id) {
+            database.ref('dossiers/' + id).once('value', snapshot => {
+                const dossier = snapshot.val();
+                if (dossier) {
+                    // Add to archive
+                    dossier.archivedDate = new Date().toISOString();
+                    database.ref('archive').push(dossier)
+                        .then(() => {
+                            // Remove from dossiers
+                            database.ref('dossiers/' + id).remove()
+                                .then(() => {
+                                    addHistoryItem('Suppression', `Dossier archivé: ${dossier.name}`);
+                                    closeModals();
+                                });
+                        });
+                }
+            });
+        }
+
+        // Delete from archive (permanent delete)
+        function deleteFromArchive(id) {
+            database.ref('archive/' + id).remove()
+                .then(() => {
+                    addHistoryItem('Suppression', 'Dossier supprimé définitivement de l\'archive');
+                });
+        }
+
+        // Clear archive
+        function clearArchive() {
+            if (confirm("Êtes-vous sûr de vouloir vider complètement l'archive ? Cette action est irréversible.")) {
+                database.ref('archive').remove()
+                    .then(() => {
+                        addHistoryItem('Nettoyage', 'Archive vidée complètement');
+                    });
+            }
+        }
+
+        // Add a task
+        function addTask(taskData) {
+            database.ref('tasks').push(taskData)
+                .then(() => {
+                    addHistoryItem('Tâche ajoutée', taskData.title);
+                    closeModals();
+                });
+        }
+
+        // Complete a task
+        function completeTask(id) {
+            database.ref('tasks/' + id).remove()
+                .then(() => {
+                    addHistoryItem('Tâche terminée', `Tâche marquée comme terminée`);
+                });
+        }
+
+        // Delete a task
+        function deleteTask(id) {
+            database.ref('tasks/' + id).remove()
+                .then(() => {
+                    addHistoryItem('Tâche supprimée', `Tâche supprimée`);
+                });
+        }
+
+        // Add history item
+        function addHistoryItem(action, details = '') {
+            if (!currentUser) return;
+            
+            const historyItem = {
+                timestamp: new Date().toISOString(),
+                userEmail: currentUser.email,
+                action: action,
+                details: details
+            };
+            
+            database.ref('history').push(historyItem);
+        }
+
+        // Export data to JSON
+        function exportData() {
+            Promise.all([
+                database.ref('dossiers').once('value'),
+                database.ref('tasks').once('value'),
+                database.ref('history').once('value'),
+                database.ref('archive').once('value')
+            ]).then(([dossiersSnapshot, tasksSnapshot, historySnapshot, archiveSnapshot]) => {
+                const data = {
+                    dossiers: dossiersSnapshot.val(),
+                    tasks: tasksSnapshot.val(),
+                    history: historySnapshot.val(),
+                    archive: archiveSnapshot.val(),
+                    exportedAt: new Date().toISOString()
+                };
+                
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `legalflow-export-${new Date().toISOString().split('T')[0]}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                addHistoryItem('Export', 'Données exportées en JSON');
+            });
+        }
+
+        // Import data from JSON
+        function importData(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (confirm("Êtes-vous sûr de vouloir importer ces données ? Cela écrasera les données existantes.")) {
+                        const updates = {};
+                        
+                        if (data.dossiers) updates['dossiers'] = data.dossiers;
+                        if (data.tasks) updates['tasks'] = data.tasks;
+                        if (data.history) updates['history'] = data.history;
+                        if (data.archive) updates['archive'] = data.archive;
+                        
+                        database.ref().update(updates)
+                            .then(() => {
+                                addHistoryItem('Import', 'Données importées depuis JSON');
+                                closeModals();
+                            });
+                    }
+                } catch (error) {
+                    alert("Erreur lors de l'import du fichier: " + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Helper functions
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleString('fr-FR');
+        }
+
+        function formatDateTimeForInput(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toISOString().slice(0, 16);
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'new': 'Nouveau',
+                'pending': 'En cours',
+                'standby': 'Standby',
+                'postponed': 'Renvoi',
+                'closed': 'Clôturé'
+            };
+            return statusMap[status] || status;
+        }
+
+        function isUpcomingAudience(dateString) {
+            if (!dateString) return false;
+            const audienceDate = new Date(dateString);
+            const now = new Date();
+            const diffTime = audienceDate - now;
+            const diffDays = diffTime / (1000 * 60 * 60 * 24);
+            return diffDays > 0 && diffDays <= 7;
+        }
+
+        // Event Listeners
+        // Login/Logout
+        loginForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => {
+                    alert("Erreur de connexion: " + error.message);
+                });
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut();
+        });
+
+        // Navigation tabs
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.target;
+                
+                navTabs.forEach(t => t.classList.remove('active'));
+                contentSections.forEach(s => s.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        // Dossier actions
+        addDossierBtn.addEventListener('click', () => {
+            openDossierModal('add');
+        });
+
+        dossierForm.addEventListener('submit', e => {
+            e.preventDefault();
+            
+            const dossierData = {
+                number: document.getElementById('dossier-number').value,
+                name: document.getElementById('dossier-name').value,
+                clientName: document.getElementById('client-name').value,
+                clientPhone: document.getElementById('client-phone').value,
+                clientEmail: document.getElementById('client-email').value,
+                audienceDate: document.getElementById('audience-date').value,
+                status: document.getElementById('dossier-status').value,
+                notes: document.getElementById('dossier-notes').value,
+                createdAt: new Date().toISOString()
+            };
+            
+            if (currentDossierId) {
+                updateDossier(currentDossierId, dossierData);
+            } else {
+                addDossier(dossierData);
+            }
+        });
+
+        // Task actions
+        addTaskBtn.addEventListener('click', () => {
+            openTaskModal();
+        });
+
+        taskForm.addEventListener('submit', e => {
+            e.preventDefault();
+            
+            const taskData = {
+                title: document.getElementById('task-title').value,
+                description: document.getElementById('task-description').value,
+                deadline: document.getElementById('task-deadline').value,
+                assignee: document.getElementById('task-assignee').value,
+                createdAt: new Date().toISOString(),
+                createdBy: currentUser.email
+            };
+            
+            addTask(taskData);
+        });
+
+        // History actions
+        exportBtn.addEventListener('click', exportData);
+        
+        importBtn.addEventListener('click', () => {
+            importModal.classList.add('active');
+        });
+
+        importForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const fileInput = document.getElementById('import-file');
+            if (fileInput.files.length > 0) {
+                importData(fileInput.files[0]);
+            }
+        });
+
+        // Archive actions
+        clearArchiveBtn.addEventListener('click', clearArchive);
+
+        // Modal actions
+        modalCloseBtns.forEach(btn => {
+            btn.addEventListener('click', closeModals);
+        });
+
+        cancelBtns.forEach(btn => {
+            btn.addEventListener('click', closeModals);
+        });
+
+        // Auth modal
+        authForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const password = document.getElementById('auth-password').value;
+            
+            // Reauthenticate user
+            const credential = firebase.auth.EmailAuthProvider.credential(
+                currentUser.email, 
+                password
+            );
+            
+            currentUser.reauthenticateWithCredential(credential)
+                .then(() => {
+                    if (currentAction === 'edit') {
+                        database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
+                            const dossier = snapshot.val();
+                            if (dossier) {
+                                openDossierModal('edit', dossier);
+                            }
+                        });
+                    } else if (currentAction === 'delete') {
+                        deleteDossier(currentDossierId);
+                    }
+                    
+                    authForm.reset();
+                    closeModals();
+                })
+                .catch(error => {
+                    alert("Erreur d'authentification: " + error.message);
+                });
+        });
+
+        // Search functionality
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            document.querySelectorAll('.dossier-row').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Initialize the app
+        initApp();
+
+        // Request notification permission
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
+		
+		// Blocage du clic droit + message
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            document.body.classList.add('show-message');
+            setTimeout(() => {
+                document.body.classList.remove('show-message');
+            }, 3000);
+        });
+
+        // Blocage des touches F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+                (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+                document.body.classList.add('show-message');
+                setTimeout(() => {
+                    document.body.classList.remove('show-message');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
