@@ -1300,12 +1300,17 @@
             const editBtn = row.querySelector('.edit-btn');
             const deleteBtn = row.querySelector('.delete-btn');
             
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                currentDossierId = id;
-                currentAction = 'edit';
-                openAuthModal();
-            });
+           editBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentDossierId = id;
+    currentAction = 'edit';
+    // Récupérer les données du dossier avant d'ouvrir le modal d'authentification
+    database.ref('dossiers/' + id).once('value', snapshot => {
+        const dossier = snapshot.val();
+        if (dossier) {
+            openAuthModal(dossier); // Passer le dossier à la fonction
+        }
+    });
             
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1530,9 +1535,13 @@
         }
 
         // Open auth modal
-        function openAuthModal() {
-            authModal.classList.add('active');
-        }
+        function openAuthModal(dossier = null) {
+    if (dossier) {
+        // Stocker le dossier temporairement
+        window.tempDossier = dossier;
+    }
+    authModal.classList.add('active');
+}
 
         // Close all modals
         function closeModals() {
@@ -1864,26 +1873,24 @@
             );
             
            currentUser.reauthenticateWithCredential(credential)
-    .then(() => {
+     .then(() => {
         if (currentAction === 'edit') {
-            database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
-                const dossier = snapshot.val();
-                if (dossier) {
-                    openDossierModal('edit', dossier);
-                } else {
-                    alert("Dossier introuvable ou déjà supprimé !");
-                }
-            });
+            // Utiliser le dossier stocké temporairement
+            const dossier = window.tempDossier;
+            if (dossier) {
+                openDossierModal('edit', dossier);
+                delete window.tempDossier; // Nettoyer
+            }
         } else if (currentAction === 'delete') {
             deleteDossier(currentDossierId);
         }
-                    
-                    authForm.reset();
-                    closeModals();
-                })
-                .catch(error => {
-                    alert("Erreur d'authentification: " + error.message);
-                });
+        
+        authForm.reset();
+        closeModals();
+    })
+    .catch(error => {
+        alert("Erreur d'authentification: " + error.message);
+    });
         });
 
         // Search functionality
