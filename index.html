@@ -1169,6 +1169,11 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
+	    database.ref('dossiers').on('value', (snapshot) => {
+    console.log("Mise à jour reçue de Firebase"); // Debug
+    loadDossiers(); // Recharge la liste
+});
+
         // DOM Elements
         const loginSection = document.getElementById('login-section');
         const appContainer = document.getElementById('app-container');
@@ -1556,15 +1561,35 @@
 
         // Update a dossier
         function updateDossier(id, dossierData) {
-            database.ref('dossiers/' + id).update(dossierData)
-                .then(() => {
-                    addHistoryItem('Modification', `Dossier modifié: ${dossierData.name}`);
-                    closeModals();
-                })
-                .catch(error => {
-                    console.error("Error updating dossier: ", error);
-                });
-        }
+    console.groupCollapsed("[DEBUG] updateDossier"); // Groupe repliable
+    console.log("ID:", id, "Data:", JSON.parse(JSON.stringify(dossierData))); // Clone les données pour éviter les références
+
+    database.ref('dossiers/' + id).update(dossierData)
+        .then(() => {
+            console.log("%cSUCCÈS", "color:green;font-weight:bold");
+            addHistoryItem('Modification', `Dossier modifié: ${dossierData.name}`);
+        })
+        .catch(error => {
+            // ★ DEBUG COMPLET DE L'ERREUR ★
+            console.group("ERREUR");
+            console.error("%cCode:", "color:red", error.code || "N/A"); 
+            console.error("Message:", error.message);
+            console.error("Stack:", error.stack);
+            
+            // Vérification supplémentaire
+            if (!id) console.warn("⚠ ID non défini");
+            if (!dossierData) console.warn("⚠ Données vides");
+            
+            console.groupEnd();
+            
+            // Notification utilisateur améliorée
+            alert(`Erreur ${error.code || 'inconnue'}\n${error.message}\nVoir console (F12)`); 
+        })
+        .finally(() => {
+            console.groupEnd(); // Ferme le groupe principal
+            closeModals(); // Assure la fermeture du modal
+        });
+}
 
         // Delete a dossier (move to archive)
         function deleteDossier(id) {
@@ -1864,24 +1889,25 @@
             );
             
             currentUser.reauthenticateWithCredential(credential)
-                .then(() => {
-                    if (currentAction === 'edit') {
-                        database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
-                            const dossier = snapshot.val();
-                            if (dossier) {
-                                openDossierModal('edit', dossier);
-                            }
-                        });
-                    } else if (currentAction === 'delete') {
-                        deleteDossier(currentDossierId);
-                    }
-                    
-                    authForm.reset();
-                    closeModals();
-                })
-                .catch(error => {
-                    alert("Erreur d'authentification: " + error.message);
-                });
+    .then(() => {
+        if (currentAction === 'edit') {
+            database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
+                const dossier = snapshot.val();
+                if (dossier) {
+                    openDossierModal('edit', dossier);
+                }
+            }).catch(error => {
+                console.error("Erreur lecture dossier:", error);
+            });
+        } else if (currentAction === 'delete') {
+            deleteDossier(currentDossierId);
+        }
+        authForm.reset();
+        closeModals();
+    })
+    .catch(error => {
+        alert("Erreur d'authentification: " + error.message);
+    });
         });
 
         // Search functionality
