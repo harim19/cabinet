@@ -1863,18 +1863,20 @@
                 password
             );
             
-            currentUser.reauthenticateWithCredential(credential)
-                .then(() => {
-                    if (currentAction === 'edit') {
-                        database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
-                            const dossier = snapshot.val();
-                            if (dossier) {
-                                openDossierModal('edit', dossier);
-                            }
-                        });
-                    } else if (currentAction === 'delete') {
-                        deleteDossier(currentDossierId);
-                    }
+           currentUser.reauthenticateWithCredential(credential)
+    .then(() => {
+        if (currentAction === 'edit') {
+            database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
+                const dossier = snapshot.val();
+                if (dossier) {
+                    openDossierModal('edit', dossier);
+                } else {
+                    alert("Dossier introuvable ou déjà supprimé !");
+                }
+            });
+        } else if (currentAction === 'delete') {
+            deleteDossier(currentDossierId);
+        }
                     
                     authForm.reset();
                     closeModals();
