@@ -1153,8 +1153,8 @@
     </div>
 
     <script>
-       if(typeof firebase !== 'undefined' && typeof firebase.query === 'undefined') {
-    const firebaseConfig = {
+      // Firebase Configuration
+        const firebaseConfig = {
             apiKey: "AIzaSyBsP4Dhhu1VN5rFEg5saGy4buIq5Fle-44",
             authDomain: "essai-avocat.firebaseapp.com",
             databaseURL: "https://essai-avocat-default-rtdb.firebaseio.com",
@@ -1165,31 +1165,9 @@
         };
 
         // Initialize Firebase
-        if(!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
-    } else {
-        firebase.app();
-    }
-    
-    // Vos variables Firebase
-	        const auth = firebase.auth();
-    const database = firebase.database();
-    window.auth = firebase.auth();
-    window.database = firebase.database();
-
-	       } else {
-    console.error("Erreur: Firebase corrompu par une extension");
-    // Solution alternative: rechargez le script Firebase
-    const script = document.createElement('script');
-    script.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
-    script.onload = () => {
-        firebase.initializeApp(firebaseConfig);
-        // Réinitialisez vos variables auth/database ici...
-    };
-    document.head.appendChild(script);
-
-    console.log("Firebase initialisé avec succès");
-}
+        const auth = firebase.auth();
+        const database = firebase.database();
         
         // DOM Elements
         const loginSection = document.getElementById('login-section');
