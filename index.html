@@ -1173,9 +1173,7 @@
             </form>
         </div>
     </div>
-	<!-- Champ caché pour la date -->
-<input type="date" id="renvoi-date-input" style="display: none;">
-
+	
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1308,14 +1306,14 @@ if (dossier.status === 'new') {
     <button class="edit-btn" data-id="${id}">
         <i class="fas fa-edit"></i> Modifier
     </button>
-    <button class="delete-btn" data-id="${id}">
-        <i class="fas fa-trash"></i> Supprimer
-    </button>
-    <button class="renvoi-btn" data-id="${id}">
+        <button class="renvoi-btn" data-id="${id}">
         <i class="fas fa-calendar-alt"></i> Renvoi
     </button>
     <button class="standby-btn" data-id="${id}">
         <i class="fas fa-pause"></i> Standby
+    </button>
+    <button class="delete-btn" data-id="${id}">
+        <i class="fas fa-trash"></i> Supprimer
     </button>
 </div>
                 </td>
