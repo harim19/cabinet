@@ -1189,17 +1189,18 @@ function initializeFirebase() {
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
+	 database.ref('dossiers').on('value', (snapshot) => {
+    console.log("Mise à jour reçue de Firebase"); // Debug
+    loadDossiers(); // Recharge la liste
+})
+	
     window.auth = firebase.auth();
     window.database = firebase.database();
     // Lancer l’app
     initApp();
 }
 	     	    
-	    database.ref('dossiers').on('value', (snapshot) => {
-    console.log("Mise à jour reçue de Firebase"); // Debug
-    loadDossiers(); // Recharge la liste
-})
-		      // Initialize App
+	   		      // Initialize App
         function initApp() {
             auth.onAuthStateChanged(user => {
                 if (user) {
