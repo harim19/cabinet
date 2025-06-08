@@ -1262,15 +1262,17 @@
             
             // Determine status badge
             let statusBadge = '';
-            if (dossier.status === 'new') {
-                statusBadge = '<span class="status-badge status-new">New</span>';
-            } else if (dossier.status === 'postponed') {
-                statusBadge = '<span class="status-badge status-renvoi">Renvoi</span>';
-            } else if (dossier.status === 'standby') {
-                statusBadge = '<span class="status-badge status-standby">Standby</span>';
-            } else if (isUpcomingAudience(dossier.audienceDate)) {
-                statusBadge = '<span class="status-badge status-urgent">Urgent</span>';
-            }
+if (dossier.status === 'new') {
+    statusBadge = '<span class="status-badge status-new">New</span>';
+} else if (dossier.status === 'postponed') {
+    statusBadge = '<span class="status-badge status-renvoi">Renvoi</span>';
+} else if (dossier.status === 'standby') {
+    statusBadge = '<span class="status-badge status-standby">Standby</span>';
+} else if (isUpcomingAudience(dossier.audienceDate)) {
+    statusBadge = '<span class="status-badge status-urgent">Urgent</span>';
+} else {
+    statusBadge = `<span class="status-badge">${getStatusText(dossier.status)}</span>`;
+}
 
             row.innerHTML = `
                 <td>${dossier.number}</td>
@@ -1278,14 +1280,20 @@
                 <td>${formatDate(dossier.audienceDate)}</td>
                 <td>${statusBadge}</td>
                 <td>
-                    <div class="action-buttons">
-                        <button class="edit-btn" data-id="${id}">
-                            <i class="fas fa-edit"></i> Modifier
-                        </button>
-                        <button class="delete-btn" data-id="${id}">
-                            <i class="fas fa-trash"></i> Supprimer
-                        </button>
-                    </div>
+<div class="action-buttons">
+    <button class="edit-btn" data-id="${id}">
+        <i class="fas fa-edit"></i> Modifier
+    </button>
+    <button class="delete-btn" data-id="${id}">
+        <i class="fas fa-trash"></i> Supprimer
+    </button>
+    <button class="renvoi-btn" data-id="${id}">
+        <i class="fas fa-calendar-alt"></i> Renvoi
+    </button>
+    <button class="standby-btn" data-id="${id}">
+        <i class="fas fa-pause"></i> Standby
+    </button>
+</div>
                 </td>
             `;
 
@@ -1297,22 +1305,27 @@
             });
 
             // Add edit/delete button events
-            const editBtn = row.querySelector('.edit-btn');
-            const deleteBtn = row.querySelector('.delete-btn');
+            const renvoiBtn = row.querySelector('.renvoi-btn');
+const standbyBtn = row.querySelector('.standby-btn');
+		renvoiBtn.addEventListener('click', () => handleRenvoi(id));
+standbyBtn.addEventListener('click', () => handleStandby(id));
             
             editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                currentDossierId = id;
-                currentAction = 'edit';
-                openAuthModal();
-            });
-            
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                currentDossierId = id;
-                currentAction = 'delete';
-                openAuthModal();
-            });
+    e.stopPropagation();
+    currentDossierId = id;
+    database.ref('dossiers/' + id).once('value').then(snapshot => {
+        const dossier = snapshot.val();
+        if (dossier) {
+            openDossierModal('edit', dossier);
+        }
+    });
+});
+
+deleteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentDossierId = id;
+    deleteDossier(id);
+});
 
             dossiersList.appendChild(row);
         }
@@ -1565,6 +1578,26 @@
                     console.error("Error updating dossier: ", error);
                 });
         }
+
+	    function handleRenvoi(id) {
+    const newDate = prompt("Entrez la nouvelle date d'audience (format: YYYY-MM-DDTHH:MM):", "");
+    if (newDate) {
+        database.ref('dossiers/' + id).update({
+            audienceDate: new Date(newDate).toISOString(),
+            status: 'postponed'
+        }).then(() => {
+            addHistoryItem('Renvoi', `Dossier ${id} reporté au ${newDate}`);
+        });
+    }
+}
+
+function handleStandby(id) {
+    database.ref('dossiers/' + id).update({
+        status: 'standby'
+    }).then(() => {
+        addHistoryItem('Statut changé', `Dossier ${id} mis en Standby`);
+    });
+}
 
         // Delete a dossier (move to archive)
         function deleteDossier(id) {
@@ -1899,30 +1932,7 @@
         // Request notification permission
         if ("Notification" in window) {
             Notification.requestPermission();
-        }
-		
-		// Blocage du clic droit + message
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            document.body.classList.add('show-message');
-            setTimeout(() => {
-                document.body.classList.remove('show-message');
-            }, 3000);
-        });
-
-        // Blocage des touches F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-                (e.ctrlKey && e.shiftKey && e.key === 'J') || 
-                (e.ctrlKey && e.key === 'U')) {
-                e.preventDefault();
-                document.body.classList.add('show-message');
-                setTimeout(() => {
-                    document.body.classList.remove('show-message');
-                }, 3000);
-            }
-        });
+        }		
     </script>
 </body>
 </html>
