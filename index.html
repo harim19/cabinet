@@ -1637,15 +1637,29 @@ deleteBtn.addEventListener('click', (e) => {
         }
 
 	    function handleRenvoi(id) {
-    const newDate = prompt("Entrez la nouvelle date d'audience (format: YYYY-MM-DDTHH:MM):", "");
-    if (newDate) {
-        database.ref('dossiers/' + id).update({
-            audienceDate: new Date(newDate).toISOString(),
-            status: 'postponed'
-        }).then(() => {
-            addHistoryItem('Renvoi', `Dossier ${id} reporté au ${newDate}`);
-        });
-    }
+    const inputDate = document.getElementById('renvoi-date-input');
+    inputDate.style.display = 'block';
+    inputDate.focus();
+
+    const handleDateChange = () => {
+        if (inputDate.value) {
+            const newDate = new Date(inputDate.value + "T09:00"); // Heure par défaut
+
+            if (!isNaN(newDate)) {
+                database.ref('dossiers/' + id).update({
+                    audienceDate: newDate.toISOString(),
+                    status: 'postponed'
+                }).then(() => {
+                    addHistoryItem('Renvoi', `Dossier ${id} reporté au ${inputDate.value}`);
+                    inputDate.style.display = 'none';
+                    inputDate.removeEventListener('change', handleDateChange);
+                });
+            }
+        }
+    };
+
+    inputDate.addEventListener('change', handleDateChange);
+    inputDate.showPicker(); // Affiche immédiatement le sélecteur
 }
 
 function handleStandby(id) {
