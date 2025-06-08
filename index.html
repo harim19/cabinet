@@ -445,6 +445,32 @@
             box-shadow: 0 0 10px var(--neon-red);
         }
 
+	    .renvoiBtn, .standbyBtn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .renvoiBtn {
+            background: rgba(0, 247, 255, 0.2);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+        }
+
+        .renvoiBtn:hover {
+            background: rgba(0, 247, 255, 0.4);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
         /* Dossier Details */
         .dossier-details {
             background: rgba(15, 15, 35, 0.9);
