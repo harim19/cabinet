@@ -1309,6 +1309,9 @@ if (dossier.status === 'new') {
 const standbyBtn = row.querySelector('.standby-btn');
 		renvoiBtn.addEventListener('click', () => handleRenvoi(id));
 standbyBtn.addEventListener('click', () => handleStandby(id));
+
+		const editBtn = row.querySelector('.edit-btn');
+const deleteBtn = row.querySelector('.delete-btn');
             
             editBtn.addEventListener('click', (e) => {
     e.stopPropagation();
