@@ -1195,13 +1195,27 @@ function initializeFirebase() {
     initApp();
 }
 	     	    
-// Appelez cette fonction au chargement
-window.addEventListener('DOMContentLoaded', initializeFirebase);
-
 	    database.ref('dossiers').on('value', (snapshot) => {
     console.log("Mise à jour reçue de Firebase"); // Debug
     loadDossiers(); // Recharge la liste
-});
+})
+		      // Initialize App
+        function initApp() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    usernameDisplay.textContent = user.email.split('@')[0];
+                    loginSection.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    loadData();
+                    checkUpcomingAudiences();
+                } else {
+                    currentUser = null;
+                    loginSection.style.display = 'flex';
+                    appContainer.style.display = 'none';
+                }
+            });
+        };
 
         // DOM Elements
         const loginSection = document.getElementById('login-section');
@@ -1251,24 +1265,9 @@ window.addEventListener('DOMContentLoaded', initializeFirebase);
         let currentDossierId = null;
         let currentAction = null; // 'edit', 'delete', etc.
 
-        // Initialize App
-        function initApp() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    currentUser = user;
-                    usernameDisplay.textContent = user.email.split('@')[0];
-                    loginSection.style.display = 'none';
-                    appContainer.style.display = 'block';
-                    loadData();
-                    checkUpcomingAudiences();
-                } else {
-                    currentUser = null;
-                    loginSection.style.display = 'flex';
-                    appContainer.style.display = 'none';
-                }
-            });
-        }
-
+      	    // Appelez cette fonction au chargement
+window.addEventListener('DOMContentLoaded', initializeFirebase);
+	    
         // Load all data from Firebase
         function loadData() {
             loadDossiers();
