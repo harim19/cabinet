@@ -931,7 +931,7 @@
     <div id="app-container">
         <!-- Header -->
         <header class="app-header">
-            <div class="logo futuristic-font">LegalFlow</div>
+            <div class="logo futuristic-font">Cabinet Maître Andry</div>
             <div class="user-info">
                 <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
                 <span id="username-display">Utilisateur</span>
@@ -1173,7 +1173,7 @@
             </form>
         </div>
     </div>
-	
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1329,31 +1329,12 @@ if (dossier.status === 'new') {
             // Add edit/delete button events
             const renvoiBtn = row.querySelector('.renvoi-btn');
 const standbyBtn = row.querySelector('.standby-btn');
-		renvoiBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (confirm("Voulez-vous reporter ce dossier ?")) {
-        const inputDate = document.getElementById('renvoi-date-input');
-        // Créer une boîte de dialogue personnalisée ou utiliser prompt()
-        inputDate.style.display = 'block';
-        inputDate.focus();
-
-        const updateDate = () => {
-            if (inputDate.value) {
-                database.ref('dossiers/' + id).update({
-                    audienceDate: new Date(inputDate.value).toISOString(),
-                    status: 'postponed'
-                }).then(() => {
-                    addHistoryItem('Renvoi', `Dossier ${id} reporté au ${inputDate.value}`);
-                    inputDate.style.display = 'none';
-                });
-            }
-        };
-
-        inputDate.onchange = updateDate;
-        inputDate.onclick = () => inputDate.showPicker(); // Force l'affichage du sélecteur
+		renvoiBtn.addEventListener('click', () => {
+    if (confirm("Voulez-vous vraiment reporter ce dossier ?")) {
+        handleRenvoi(id);
     }
 });
-		
+
 standbyBtn.addEventListener('click', () => {
     if (confirm("Mettre ce dossier en Standby ?")) {
         handleStandby(id);
@@ -1635,29 +1616,15 @@ deleteBtn.addEventListener('click', (e) => {
         }
 
 	    function handleRenvoi(id) {
-    const inputDate = document.getElementById('renvoi-date-input');
-    inputDate.style.display = 'block';
-    inputDate.focus();
-
-    const handleDateChange = () => {
-        if (inputDate.value) {
-            const newDate = new Date(inputDate.value + "T09:00"); // Heure par défaut
-
-            if (!isNaN(newDate)) {
-                database.ref('dossiers/' + id).update({
-                    audienceDate: newDate.toISOString(),
-                    status: 'postponed'
-                }).then(() => {
-                    addHistoryItem('Renvoi', `Dossier ${id} reporté au ${inputDate.value}`);
-                    inputDate.style.display = 'none';
-                    inputDate.removeEventListener('change', handleDateChange);
-                });
-            }
-        }
-    };
-
-    inputDate.addEventListener('change', handleDateChange);
-    inputDate.showPicker(); // Affiche immédiatement le sélecteur
+    const newDate = prompt("Entrez la nouvelle date d'audience (format: YYYY-MM-DDTHH:MM):", "");
+    if (newDate) {
+        database.ref('dossiers/' + id).update({
+            audienceDate: new Date(newDate).toISOString(),
+            status: 'postponed'
+        }).then(() => {
+            addHistoryItem('Renvoi', `Dossier ${id} reporté au ${newDate}`);
+        });
+    }
 }
 
 function handleStandby(id) {
@@ -2002,6 +1969,29 @@ function handleStandby(id) {
         if ("Notification" in window) {
             Notification.requestPermission();
         }		
+
+	    // Blocage du clic droit + message
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            document.body.classList.add('show-message');
+            setTimeout(() => {
+                document.body.classList.remove('show-message');
+            }, 3000);
+        });
+
+        // Blocage des touches F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+                (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+                document.body.classList.add('show-message');
+                setTimeout(() => {
+                    document.body.classList.remove('show-message');
+                }, 3000);
+            }
+        });
     </script>
-	</body>
+</body>
 </html>
