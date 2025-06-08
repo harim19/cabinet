@@ -1164,59 +1164,10 @@
             appId: "1:783262697780:web:ae60d58b6dce49aca3fd61"
         };
 
-		          	    function loadFirebaseManually() {
-    const script = document.createElement('script');
-    script.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
-    script.onload = () => {
-        const authScript = document.createElement('script');
-        authScript.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js";
-        document.head.appendChild(authScript);
-        
-        const dbScript = document.createElement('script');
-        dbScript.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js";
-        document.head.appendChild(dbScript);
-    };
-    document.head.appendChild(script);
-}
-
-	         // Initialisation de Firebase et de l’app
-function initializeFirebase() {
-    if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
-        console.error("Firebase corrompu par une extension");
-        loadFirebaseManually();
-        return;
-    }
-    if (!firebase.apps.length) {
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-    }
-	 database.ref('dossiers').on('value', (snapshot) => {
-    console.log("Mise à jour reçue de Firebase"); // Debug
-    loadDossiers(); // Recharge la liste
-})
-	
-    window.auth = firebase.auth();
-    window.database = firebase.database();
-    // Lancer l’app
-    initApp();
-}
-	     	    
-	   		      // Initialize App
-        function initApp() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    currentUser = user;
-                    usernameDisplay.textContent = user.email.split('@')[0];
-                    loginSection.style.display = 'none';
-                    appContainer.style.display = 'block';
-                    loadData();
-                    checkUpcomingAudiences();
-                } else {
-                    currentUser = null;
-                    loginSection.style.display = 'flex';
-                    appContainer.style.display = 'none';
-                }
-            });
-        };
+        const auth = firebase.auth();
+        const database = firebase.database();
 
         // DOM Elements
         const loginSection = document.getElementById('login-section');
@@ -1266,9 +1217,24 @@ function initializeFirebase() {
         let currentDossierId = null;
         let currentAction = null; // 'edit', 'delete', etc.
 
-      	    // Appelez cette fonction au chargement
-window.addEventListener('DOMContentLoaded', initializeFirebase);
-	    
+        // Initialize App
+        function initApp() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    usernameDisplay.textContent = user.email.split('@')[0];
+                    loginSection.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    loadData();
+                    checkUpcomingAudiences();
+                } else {
+                    currentUser = null;
+                    loginSection.style.display = 'flex';
+                    appContainer.style.display = 'none';
+                }
+            });
+        }
+
         // Load all data from Firebase
         function loadData() {
             loadDossiers();
@@ -1334,41 +1300,12 @@ window.addEventListener('DOMContentLoaded', initializeFirebase);
             const editBtn = row.querySelector('.edit-btn');
             const deleteBtn = row.querySelector('.delete-btn');
             
-            // ★ NOUVEAU CODE (à mettre à la place) ★
-editBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    currentDossierId = id; // Conserve l'ID du dossier
-    
-    try {
-        // 1. Authentification
-        const user = firebase.auth().currentUser;
-        const password = prompt("Veuillez confirmer votre mot de passe pour modifier:");
-        
-        if (!password) return;
-        
-        const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
-        await user.reauthenticateWithCredential(credential);
-        
-        // 2. Chargement des données
-        const dossierSnapshot = await database.ref(`dossiers/${id}`).once('value');
-        const dossier = dossierSnapshot.val();
-        
-        // 3. Ouverture du modal d'édition
-        if (dossier) {
-            document.getElementById('dossier-number').value = dossier.number;
-            document.getElementById('dossier-name').value = dossier.name;
-            document.getElementById('client-name').value = dossier.clientName;
-            document.getElementById('audience-date').value = formatDateTimeForInput(dossier.audienceDate);
-            // ... autres champs
-            
-            dossierModal.classList.add('active'); // Ouvre le modal
-        }
-        
-    } catch (error) {
-        console.error("Erreur complète:", error);
-        alert(`Échec de l'authentification : ${error.message}`);
-    }
-});
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentDossierId = id;
+                currentAction = 'edit';
+                openAuthModal();
+            });
             
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1619,35 +1556,15 @@ editBtn.addEventListener('click', async (e) => {
 
         // Update a dossier
         function updateDossier(id, dossierData) {
-    console.groupCollapsed("[DEBUG] updateDossier"); // Groupe repliable
-    console.log("ID:", id, "Data:", JSON.parse(JSON.stringify(dossierData))); // Clone les données pour éviter les références
-
-    database.ref('dossiers/' + id).update(dossierData)
-        .then(() => {
-            console.log("%cSUCCÈS", "color:green;font-weight:bold");
-            addHistoryItem('Modification', `Dossier modifié: ${dossierData.name}`);
-        })
-        .catch(error => {
-            // ★ DEBUG COMPLET DE L'ERREUR ★
-            console.group("ERREUR");
-            console.error("%cCode:", "color:red", error.code || "N/A"); 
-            console.error("Message:", error.message);
-            console.error("Stack:", error.stack);
-            
-            // Vérification supplémentaire
-            if (!id) console.warn("⚠ ID non défini");
-            if (!dossierData) console.warn("⚠ Données vides");
-            
-            console.groupEnd();
-            
-            // Notification utilisateur améliorée
-            alert(`Erreur ${error.code || 'inconnue'}\n${error.message}\nVoir console (F12)`); 
-        })
-        .finally(() => {
-            console.groupEnd(); // Ferme le groupe principal
-            closeModals(); // Assure la fermeture du modal
-        });
-}
+            database.ref('dossiers/' + id).update(dossierData)
+                .then(() => {
+                    addHistoryItem('Modification', `Dossier modifié: ${dossierData.name}`);
+                    closeModals();
+                })
+                .catch(error => {
+                    console.error("Error updating dossier: ", error);
+                });
+        }
 
         // Delete a dossier (move to archive)
         function deleteDossier(id) {
@@ -1947,25 +1864,24 @@ editBtn.addEventListener('click', async (e) => {
             );
             
             currentUser.reauthenticateWithCredential(credential)
-    .then(() => {
-        if (currentAction === 'edit') {
-            database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
-                const dossier = snapshot.val();
-                if (dossier) {
-                    openDossierModal('edit', dossier);
-                }
-            }).catch(error => {
-                console.error("Erreur lecture dossier:", error);
-            });
-        } else if (currentAction === 'delete') {
-            deleteDossier(currentDossierId);
-        }
-        authForm.reset();
-        closeModals();
-    })
-    .catch(error => {
-        alert("Erreur d'authentification: " + error.message);
-    });
+                .then(() => {
+                    if (currentAction === 'edit') {
+                        database.ref('dossiers/' + currentDossierId).once('value', snapshot => {
+                            const dossier = snapshot.val();
+                            if (dossier) {
+                                openDossierModal('edit', dossier);
+                            }
+                        });
+                    } else if (currentAction === 'delete') {
+                        deleteDossier(currentDossierId);
+                    }
+                    
+                    authForm.reset();
+                    closeModals();
+                })
+                .catch(error => {
+                    alert("Erreur d'authentification: " + error.message);
+                });
         });
 
         // Search functionality
@@ -1984,6 +1900,29 @@ editBtn.addEventListener('click', async (e) => {
         if ("Notification" in window) {
             Notification.requestPermission();
         }
+		
+		// Blocage du clic droit + message
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            document.body.classList.add('show-message');
+            setTimeout(() => {
+                document.body.classList.remove('show-message');
+            }, 3000);
+        });
+
+        // Blocage des touches F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+                (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+                document.body.classList.add('show-message');
+                setTimeout(() => {
+                    document.body.classList.remove('show-message');
+                }, 3000);
+            }
+        });
     </script>
 </body>
 </html>
