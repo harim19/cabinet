@@ -408,20 +408,20 @@
             opacity: 1;
         }
 
-        .edit-btn, .delete-btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .edit-btn, .delete-btn, .renvoi-btn, .standby-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
         .edit-btn {
             background: rgba(0, 247, 255, 0.2);
@@ -445,58 +445,27 @@
             box-shadow: 0 0 10px var(--neon-red);
         }
 
-	    .renvoiBtn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+	    .renvoi-btn {
+    background: rgba(255, 165, 0, 0.2); /* Orange clair */
+    color: orange;
+    border: 1px solid orange;
+}
 
-        .renvoiBtn {
-            background: rgba(0, 247, 255, 0.2);
-            color: var(--neon-blue);
-            border: 1px solid var(--neon-blue);
-        }
+.renvoi-btn:hover {
+    background: rgba(255, 165, 0, 0.4);
+    box-shadow: 0 0 10px orange;
+}
 
-        .renvoiBtn:hover {
-            background: rgba(0, 247, 255, 0.4);
-            box-shadow: 0 0 10px var(--neon-blue);
-        }
+.standby-btn {
+    background: rgba(255, 255, 0, 0.2); /* Jaune clair */
+    color: yellow;
+    border: 1px solid yellow;
+}
 
-	    .standbyBtn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .standbyBtn {
-            background: rgba(0, 247, 255, 0.2);
-            color: var(--neon-blue);
-            border: 1px solid var(--neon-blue);
-        }
-
-        .standbyBtn:hover {
-            background: rgba(0, 247, 255, 0.4);
-            box-shadow: 0 0 10px var(--neon-blue);
-        }
-
+.standby-btn:hover {
+    background: rgba(255, 255, 0, 0.4);
+    box-shadow: 0 0 10px yellow;
+}
 
         /* Dossier Details */
         .dossier-details {
