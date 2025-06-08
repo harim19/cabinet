@@ -1164,23 +1164,7 @@
             appId: "1:783262697780:web:ae60d58b6dce49aca3fd61"
         };
 
-	     // Protection contre les extensions
-    if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
-        console.error("Firebase corrompu par une extension");
-        loadFirebaseManually();
-        return;
-    }
-
-	    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-}
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
-
-	    function loadFirebaseManually() {
+		          	    function loadFirebaseManually() {
     const script = document.createElement('script');
     script.src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js";
     script.onload = () => {
@@ -1195,6 +1179,22 @@
     document.head.appendChild(script);
 }
 
+	         // Initialisation de Firebase et de l’app
+function initializeFirebase() {
+    if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
+        console.error("Firebase corrompu par une extension");
+        loadFirebaseManually();
+        return;
+    }
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    window.auth = firebase.auth();
+    window.database = firebase.database();
+    // Lancer l’app
+    initApp();
+}
+	     	    
 // Appelez cette fonction au chargement
 window.addEventListener('DOMContentLoaded', initializeFirebase);
 
