@@ -1329,8 +1329,36 @@ if (dossier.status === 'new') {
             // Add edit/delete button events
             const renvoiBtn = row.querySelector('.renvoi-btn');
 const standbyBtn = row.querySelector('.standby-btn');
-		renvoiBtn.addEventListener('click', () => handleRenvoi(id));
-standbyBtn.addEventListener('click', () => handleStandby(id));
+		renvoiBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (confirm("Voulez-vous reporter ce dossier ?")) {
+        const inputDate = document.getElementById('renvoi-date-input');
+        // Créer une boîte de dialogue personnalisée ou utiliser prompt()
+        inputDate.style.display = 'block';
+        inputDate.focus();
+
+        const updateDate = () => {
+            if (inputDate.value) {
+                database.ref('dossiers/' + id).update({
+                    audienceDate: new Date(inputDate.value).toISOString(),
+                    status: 'postponed'
+                }).then(() => {
+                    addHistoryItem('Renvoi', `Dossier ${id} reporté au ${inputDate.value}`);
+                    inputDate.style.display = 'none';
+                });
+            }
+        };
+
+        inputDate.onchange = updateDate;
+        inputDate.onclick = () => inputDate.showPicker(); // Force l'affichage du sélecteur
+    }
+});
+		
+standbyBtn.addEventListener('click', () => {
+    if (confirm("Mettre ce dossier en Standby ?")) {
+        handleStandby(id);
+    }
+});
 
 		const editBtn = row.querySelector('.edit-btn');
 const deleteBtn = row.querySelector('.delete-btn');
@@ -1348,8 +1376,10 @@ const deleteBtn = row.querySelector('.delete-btn');
 
 deleteBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    currentDossierId = id;
-    deleteDossier(id);
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce dossier ?")) {
+        currentDossierId = id;
+        deleteDossier(id);
+    }
 });
 
             dossiersList.appendChild(row);
@@ -1959,5 +1989,7 @@ function handleStandby(id) {
             Notification.requestPermission();
         }		
     </script>
+	<!-- Champ caché pour la date -->
+<input type="date" id="renvoi-date-input" style="display: none;">
 </body>
 </html>
