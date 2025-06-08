@@ -1731,7 +1731,7 @@ function handleStandby(id) {
                 const dataStr = JSON.stringify(data, null, 2);
                 const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
                 
-                const exportFileDefaultName = `legalflow-export-${new Date().toISOString().split('T')[0]}.json`;
+                const exportFileDefaultName = `Sauvegarde_du-${new Date().toISOString().split('T')[0]}.json`;
                 
                 const linkElement = document.createElement('a');
                 linkElement.setAttribute('href', dataUri);
