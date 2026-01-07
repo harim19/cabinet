@@ -1175,13 +1175,13 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyA9Vwjc1FAyt48pZQ1s0AO0n1dJ-sugo3w",
-            authDomain: "dentiste-4d5c7.firebaseapp.com",
-            databaseURL: "https://dentiste-4d5c7-default-rtdb.firebaseio.com",
-            projectId: "dentiste-4d5c7",
-            storageBucket: "dentiste-4d5c7.firebasestorage.app",
-            messagingSenderId: "411978469380",
-            appId: "1:411978469380:web:e6ff6b79dbdd6db3f12551"
+            apiKey: "AIzaSyBsP4Dhhu1VN5rFEg5saGy4buIq5Fle-44",
+            authDomain: "essai-avocat.firebaseapp.com",
+            databaseURL: "https://essai-avocat-default-rtdb.firebaseio.com",
+            projectId: "essai-avocat",
+            storageBucket: "essai-avocat.firebasestorage.app",
+            messagingSenderId: "783262697780",
+            appId: "1:783262697780:web:ae60d58b6dce49aca3fd61"
         };
 
         // Initialize Firebase
@@ -1976,9 +1976,21 @@ function handleStandby(id) {
                 document.body.classList.remove('show-message');
             }, 3000);
         });
+
+        // Blocage des touches F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+                (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+                document.body.classList.add('show-message');
+                setTimeout(() => {
+                    document.body.classList.remove('show-message');
+                }, 3000);
+            }
+        });
     </script>
 </body>
 </html>
-
-
 
