@@ -1468,6 +1468,7 @@ deleteBtn.addEventListener('click', (e) => {
                     <h4>${task.title}</h4>
                     <p>${task.description || ''}</p>
                     ${task.deadline ? `<small>Échéance: ${formatDate(task.deadline)}</small>` : ''}
+					<p>${task.assignee || ''}</p>
                 </div>
                 <div class="task-actions">
                     <button class="complete-btn" data-id="${id}">
@@ -2073,6 +2074,7 @@ number2: document.getElementById('dossier-number2').value,
     </script>
 </body>
 </html>
+
 
 
 
