@@ -2014,7 +2014,8 @@ function handleStandby(id) {
         });
 		
 		// Gestion propre de l'ouverture/fermeture du modal #dossier-modal
-const openDossierModalBtn = document.getElementById('add-dossier-btn');
+(function () {
+		const openDossierModalBtn = document.getElementById('add-dossier-btn');
 const dossierModal = document.getElementById('dossier-modal');
 const dossierModalContent = dossierModal.querySelector('.modal-content');
 
@@ -2052,9 +2053,11 @@ window.addEventListener('keydown', (e) => {
     closeModal(dossierModal);
   }
 });
+	})();
     </script>
 </body>
 </html>
+
 
 
 
