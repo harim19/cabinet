@@ -1085,8 +1085,8 @@
                     <input type="text" id="client-name" class="form-input" required>
                 </div>
 				<div class="form-group">
-                    <label for="client-name" class="form-label">Nom de l'Adverssaire</label>
-                    <input type="text" id="client-name" class="form-input" required>
+                    <label for="adversary-name" class="form-label">Nom de l'Adversaire</label>
+<input type="text" id="adversary-name" class="form-input">
                 </div>
                 <div class="form-group">
                     <label for="client-phone" class="form-label">Téléphone</label>
@@ -1413,6 +1413,10 @@ deleteBtn.addEventListener('click', (e) => {
                     <span class="detail-label">Client</span>
                     <div class="detail-value">${dossier.clientName}</div>
                 </div>
+				<div class="detail-item">
+  <span class="detail-label">Adversaire</span>
+  <div class="detail-value">${dossier.adversaryName || 'Non renseigné'}</div>
+</div>
                 <div class="detail-item">
                     <span class="detail-label">Téléphone</span>
                     <div class="detail-value">${dossier.clientPhone || 'Non renseigné'}</div>
@@ -1878,9 +1882,10 @@ function handleStandby(id) {
             
             const dossierData = {
                 number: document.getElementById('dossier-number').value,
-				number: document.getElementById('dossier-number2').value,
+number2: document.getElementById('dossier-number2').value,
                 name: document.getElementById('dossier-name').value,
                 clientName: document.getElementById('client-name').value,
+				adversaryName: document.getElementById('adversary-name').value,
                 clientPhone: document.getElementById('client-phone').value,
                 clientEmail: document.getElementById('client-email').value,
                 audienceDate: document.getElementById('audience-date').value,
@@ -2069,6 +2074,7 @@ function handleStandby(id) {
     </script>
 </body>
 </html>
+
 
 
 
