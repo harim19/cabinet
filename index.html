@@ -709,7 +709,7 @@
     width: 100%;
     max-width: 700px; /* augmentez si besoin */
     max-height: calc(100vh - 80px); /* empêche le dépassement vertical */
-    overflow-y: hidden; /* active le défilement interne si contenu trop grand */
+    overflow-y: auto; /* active le défilement interne si contenu trop grand */
     -webkit-overflow-scrolling: touch; /* inertie scroll mobile */
     padding: 30px;
     position: relative;
@@ -717,40 +717,6 @@
     box-shadow: 0 0 30px var(--neon-blue);
 			margin-bottom: 12px;
         }
-		
-		.modal-body {
-    max-height: calc(100vh - 160px); /* ajuste selon ton padding/modal margin */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-right: 12px; /* espace pour la scrollbar afin d'éviter chevauchement du contenu */
-}
-
-/* Style scrollbar (WebKit: Chrome, Edge, Safari) */
-.modal-body::-webkit-scrollbar {
-    width: 10px;
-}
-
-.modal-body::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 10px;
-}
-
-.modal-body::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(0,247,255,0.16), rgba(188,19,254,0.16));
-    border-radius: 10px;
-    border: 2px solid transparent; /* crée un petit padding visuel si besoin */
-    background-clip: padding-box;
-}
-
-.modal-body::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(0,247,255,0.28), rgba(188,19,254,0.28));
-}
-
-/* Firefox: couleur et largeur minimale */
-.modal-body {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0,247,255,0.2) transparent;
-}
 
         .modal-close {
             position: absolute;
@@ -1097,7 +1063,6 @@
     <!-- Add/Edit Dossier Modal -->
     <div id="dossier-modal" class="modal">
         <div class="modal-content neon-border">
-		<div class="modal-body">
             <button class="modal-close">&times;</button>
             <h2 class="modal-title" id="dossier-modal-title">Nouveau Dossier</h2>
             <form id="dossier-form">
@@ -1150,7 +1115,7 @@
     <!-- Add Task Modal -->
     <div id="task-modal" class="modal">
         <div class="modal-content neon-border">
-	        <button class="modal-close">&times;</button>
+            <button class="modal-close">&times;</button>
             <h2 class="modal-title">Nouvelle Tâche</h2>
             <form id="task-form">
                 <div class="form-group">
@@ -2034,23 +1999,22 @@ function handleStandby(id) {
 		
 		// Script court pour ouvrir/fermer la modale et gérer le scroll du body
 (function () {
-    const openBtn = document.getElementById('add-dossier-btn');
-    const modal = document.getElementById('new-dossier-modal');
+    const openBtn = document.getElementById('add-dossier-btn'); // bouton "Nouveau Dossier"
+    const modal = document.getElementById('new-dossier-modal'); // <div id="new-dossier-modal" class="modal">...</div>
     if (!openBtn || !modal) return;
 
-    // on cible la zone scrollable interne
-    const modalBody = modal.querySelector('.modal-body');
+    const modalContent = modal.querySelector('.modal-content');
 
     function openModal() {
         modal.classList.add('active');
+        // Verrouille le scroll de la page sous la modal
         document.body.style.overflow = 'hidden';
-
+        // donne le focus au premier champ de la modal si existant
         const firstInput = modal.querySelector('input, textarea, select, button');
         if (firstInput) firstInput.focus();
-
-        // si le contenu interne dépasse sa hauteur, on scroll en haut
-        if (modalBody && modalBody.scrollHeight > modalBody.clientHeight) {
-            modalBody.scrollTop = 0;
+        // si contenu plus haut que la fenêtre, scroll vers le haut du contenu
+        if (modalContent.scrollHeight > window.innerHeight) {
+            modalContent.scrollTop = 0;
         }
     }
 
@@ -2064,10 +2028,13 @@ function handleStandby(id) {
         openModal();
     });
 
+    // fermeture via bouton .modal-close (prévoyez un bouton dans la modale)
     modal.addEventListener('click', (e) => {
+        // si clic sur overlay (hors contenu), ferme
         if (e.target === modal) closeModal();
     });
 
+    // boutons de fermeture internes
     modal.querySelectorAll('.modal-close, .form-btn.cancel').forEach(btn => {
         btn.addEventListener('click', (ev) => {
             ev.preventDefault();
@@ -2075,6 +2042,7 @@ function handleStandby(id) {
         });
     });
 
+    // fermeture avec la touche Échap
     window.addEventListener('keydown', (ev) => {
         if (ev.key === 'Escape' && modal.classList.contains('active')) {
             closeModal();
@@ -2084,4 +2052,3 @@ function handleStandby(id) {
     </script>
 </body>
 </html>
-
