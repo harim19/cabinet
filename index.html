@@ -707,11 +707,12 @@
             background: var(--bg-dark);
     border-radius: 10px;
     width: 100%;
-    max-width: 700px; /* augmentez si besoin */
-    max-height: calc(100vh - 80px); /* empêche le dépassement vertical */
+    max-width: 95vw; /* augmentez si besoin */
+    max-height: 90vh; /* empêche le dépassement vertical */
+	overflow-x: hidden;
     overflow-y: auto; /* active le défilement interne si contenu trop grand */
     -webkit-overflow-scrolling: touch; /* inertie scroll mobile */
-    padding: 30px;
+    padding: 20px;
     position: relative;
     border: 1px solid var(--neon-blue);
     box-shadow: 0 0 30px var(--neon-blue);
@@ -839,11 +840,26 @@
             
             .modal-content {
                 max-width: 100%;
-        padding: 18px;
-        max-height: calc(100vh - 40px);
+        padding: 15px;
+        max-height: 95vh;
             }
         }
 
+		.modal-content .form-input,
+.modal-content .form-label {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+		.form-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--neon-blue);
+  word-break: break-word; /* ou overflow-wrap: break-word; */
+}
+		
         /* Heartbeat Animation */
         .heartbeat {
             animation: heartbeat 1.5s ease-in-out infinite both;
@@ -1999,58 +2015,48 @@ function handleStandby(id) {
 		
 		// Script court pour ouvrir/fermer la modale et gérer le scroll du body
 (function () {
-    const openBtn = document.getElementById('add-dossier-btn'); // bouton "Nouveau Dossier"
-    const modal = document.getElementById('new-dossier-modal'); // <div id="new-dossier-modal" class="modal">...</div>
-    if (!openBtn || !modal) return;
+    // Gestion propre de l'ouverture/fermeture du modal #dossier-modal
+const openDossierModalBtn = document.getElementById('add-dossier-btn');
+const dossierModal = document.getElementById('dossier-modal');
+const dossierModalContent = dossierModal.querySelector('.modal-content');
 
-    const modalContent = modal.querySelector('.modal-content');
+function openModal(modal) {
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden'; // bloque le scroll de la page
+  const firstInput = modal.querySelector('input, textarea, select, button[type="submit"]');
+  if (first userInput) firstInput.focus();
+  // Réinitialise le scroll du contenu si trop grand
+  if (dossierModalContent.scrollHeight > window.innerHeight * 0.9) {
+    dossierModalContent.scrollTop = 0;
+  }
+}
 
-    function openModal() {
-        modal.classList.add('active');
-        // Verrouille le scroll de la page sous la modal
-        document.body.style.overflow = 'hidden';
-        // donne le focus au premier champ de la modal si existant
-        const firstInput = modal.querySelector('input, textarea, select, button');
-        if (firstInput) firstInput.focus();
-        // si contenu plus haut que la fenêtre, scroll vers le haut du contenu
-        if (modalContent.scrollHeight > window.innerHeight) {
-            modalContent.scrollTop = 0;
-        }
-    }
+function closeModal(modal) {
+  modal.classList.remove('active');
+  document.body.style.overflow = ''; // réactive le scroll
+  document.getElementById('dossier-form').reset(); // optionnel : vide le formulaire
+}
 
-    function closeModal() {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
+// Événements
+openDossierModalBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  openModal(dossierModal);
+});
 
-    openBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openModal();
-    });
+// Fermeture au clic sur l'overlay
+dossierModal.addEventListener('click', (e) => {
+  if (e.target === dossierModal) closeModal(dossierModal);
+});
 
-    // fermeture via bouton .modal-close (prévoyez un bouton dans la modale)
-    modal.addEventListener('click', (e) => {
-        // si clic sur overlay (hors contenu), ferme
-        if (e.target === modal) closeModal();
-    });
-
-    // boutons de fermeture internes
-    modal.querySelectorAll('.modal-close, .form-btn.cancel').forEach(btn => {
-        btn.addEventListener('click', (ev) => {
-            ev.preventDefault();
-            closeModal();
-        });
-    });
-
-    // fermeture avec la touche Échap
-    window.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-})();
+// Fermeture via Échap
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && dossierModal.classList.contains('active')) {
+    closeModal(dossierModal);
+  }
+});
     </script>
 </body>
 </html>
+
 
 
