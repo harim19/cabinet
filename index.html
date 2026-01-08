@@ -132,7 +132,7 @@
         }
 
         .login-btn:hover {
-            background: linear-gradient(90deg, var(--neon-purple), var(--neon-red)));
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-red));
             box-shadow: 0 0 15px var(--neon-red);
         }
 
@@ -794,7 +794,7 @@
         }
 
         .form-btn.submit:hover {
-            background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue)));
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue));
             box-shadow: 0 0 15px var(--neon-blue);
         }
 
@@ -1128,8 +1128,8 @@
                     <input type="date" id="task-deadline" class="form-input">
                 </div>
 				<div class="form-group">
-                    <label for="task-title" class="form-label">Assigné à</label>
-                    <input type="text" id="task-title" class="form-input" required>
+                    <label for="task-assignee" class="form-label">Assigné à</label>
+                    <input type="text" id="task-assignee" class="form-input" required>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="form-btn cancel">Annuler</button>
@@ -1327,13 +1327,15 @@ if (dossier.status === 'new') {
             // Add edit/delete button events
             const renvoiBtn = row.querySelector('.renvoi-btn');
 const standbyBtn = row.querySelector('.standby-btn');
-		renvoiBtn.addEventListener('click', () => {
+		renvoiBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (confirm("Voulez-vous vraiment reporter ce dossier ?")) {
         handleRenvoi(id);
     }
 });
 
-standbyBtn.addEventListener('click', () => {
+standbyBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (confirm("Mettre ce dossier en Standby ?")) {
         handleStandby(id);
     }
@@ -1614,10 +1616,11 @@ deleteBtn.addEventListener('click', (e) => {
         }
 
 	    function handleRenvoi(id) {
-    const newDate = prompt("Entrez la nouvelle date d'audience (format: YYYY-MM-DDT HH:MM):", "");
+    const newDate = prompt("Entrez la nouvelle date d'audience (format: YYYY-MM-DDTHH:MM):", "");
     if (newDate) {
+        const iso = new Date(newDate).toISOString();
         database.ref('dossiers/' + id).update({
-            audienceDate: new Date(newDate).toISOString(),
+            audienceDate: iso,
             status: 'postponed'
         }).then(() => {
             addHistoryItem('Renvoi', `Dossier ${id} reporté au ${newDate}`);
@@ -1886,7 +1889,7 @@ function handleStandby(id) {
                 deadline: document.getElementById('task-deadline').value,
                 assignee: document.getElementById('task-assignee').value,
                 createdAt: new Date().toISOString(),
-                createdBy: currentUser.email
+                createdBy: currentUser ? currentUser.email : 'unknown'
             };
             
             addTask(taskData);
@@ -1993,6 +1996,3 @@ function handleStandby(id) {
     </script>
 </body>
 </html>
-
-
-
