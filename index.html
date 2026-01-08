@@ -1073,7 +1073,7 @@
                     <input type="text" id="dossier-number" class="form-input" required>
                 </div>
 				<div class="form-group">
-                    <label for="dossier-number2" class="form-label">Numéro de Dossier 2</label>
+                    <label for="dossier-number" class="form-label">Numéro de Dossier 2</label>
                     <input type="text" id="dossier-number2" class="form-input" required>
                 </div>
                 <div class="form-group">
@@ -1580,7 +1580,7 @@ deleteBtn.addEventListener('click', (e) => {
             } else if (mode === 'edit' && dossier) {
                 title.textContent = 'Modifier Dossier';
                 document.getElementById('dossier-number').value = dossier.number;
-				document.getElementById('dossier-number2').value = dossier.number2;
+				document.getElementById('dossier-number2').value = dossier.number;
                 document.getElementById('dossier-name').value = dossier.name;
                 document.getElementById('client-name').value = dossier.clientName;
                 document.getElementById('client-phone').value = dossier.clientPhone || '';
@@ -2069,5 +2069,6 @@ function handleStandby(id) {
     </script>
 </body>
 </html>
+
 
 
