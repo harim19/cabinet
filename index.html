@@ -1315,6 +1315,8 @@ if (dossier.status === 'new') {
                 <td>${dossier.number}</td>
 				<td>${dossier.number2}</td>
                 <td>${dossier.name}</td>
+				<td>${client.name}</td>
+				<td>${adversary.name}</td>
                 <td>${formatDate(dossier.audienceDate)}</td>
                 <td>${statusBadge}</td>
                 <td>
@@ -1531,6 +1533,8 @@ deleteBtn.addEventListener('click', (e) => {
                 <td>${dossier.number}</td>
 				<td>${dossier.number2}</td>
                 <td>${dossier.name}</td>
+				<td>${dossier.clientname}</td>
+				<td>${dossier.adversaryname}</td>
                 <td>${formatDate(dossier.archivedDate)}</td>
                 <td>
                     <button class="delete-btn" data-id="${id}">
@@ -1591,6 +1595,7 @@ deleteBtn.addEventListener('click', (e) => {
 				document.getElementById('dossier-number2').value = dossier.number;
                 document.getElementById('dossier-name').value = dossier.name;
                 document.getElementById('client-name').value = dossier.clientName;
+				document.getElementById('adversary-name').value = dossier.adversaryName;
                 document.getElementById('client-phone').value = dossier.clientPhone || '';
                 document.getElementById('client-email').value = dossier.clientEmail || '';
                 document.getElementById('audience-date').value = formatDateTimeForInput(dossier.audienceDate);
@@ -2078,6 +2083,7 @@ number2: document.getElementById('dossier-number2').value,
     </script>
 </body>
 </html>
+
 
 
 
