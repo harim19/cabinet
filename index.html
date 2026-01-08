@@ -2003,49 +2003,63 @@ function handleStandby(id) {
         
 		
 		// Gestion propre de l'ouverture/fermeture du modal #dossier-modal
+// Script corrigé pour gérer la modal #dossier-modal
 (function () {
-		const openDossierModalBtn = document.getElementById('add-dossier-btn');
-const dossierModal = document.getElementById('dossier-modal');
-const dossierModalContent = dossierModal.querySelector('.modal-content');
+  const openBtn = document.getElementById('add-dossier-btn');
+  const modal = document.getElementById('dossier-modal'); // ⚠️ Pas "new-dossier-modal"
+  if (!openBtn || !modal) return;
 
-function openModal(modal) {
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden'; // bloque le scroll de la page
-  const firstInput = modal.querySelector('input, textarea, select, button[type="submit"]');
-  if (first userInput) firstInput.focus();
-  // Réinitialise le scroll du contenu si trop grand
-  if (dossierModalContent.scrollHeight > window.innerHeight * 0.9) {
-    dossierModalContent.scrollTop = 0;
+  const modalContent = modal.querySelector('.modal-content');
+
+  function openModal() {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Bloque le scroll du body
+
+    const firstInput = modal.querySelector('input, textarea, select, button[type="submit"]');
+    if (firstInput) firstInput.focus(); // ✅ Corrigé ici
+
+    if (modalContent.scrollHeight > window.innerHeight) {
+      modalContent.scrollTop = 0;
+    }
   }
-}
 
-function closeModal(modal) {
-  modal.classList.remove('active');
-  document.body.style.overflow = ''; // réactive le scroll
-  document.getElementById('dossier-form').reset(); // optionnel : vide le formulaire
-}
-
-// Événements
-openDossierModalBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  openModal(dossierModal);
-});
-
-// Fermeture au clic sur l'overlay
-dossierModal.addEventListener('click', (e) => {
-  if (e.target === dossierModal) closeModal(dossierModal);
-});
-
-// Fermeture via Échap
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && dossierModal.classList.contains('active')) {
-    closeModal(dossierModal);
+  function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    // Optionnel : réinitialiser le formulaire
+    const form = modal.querySelector('form');
+    if (form) form.reset();
   }
-});
-	})();
+
+  openBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal();
+  });
+
+  // Fermeture au clic sur l'overlay
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Fermeture via boutons "Annuler" ou "×"
+  modal.querySelectorAll('.modal-close, .form-btn.cancel').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeModal();
+    });
+  });
+
+  // Fermeture avec Échap
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      closeModal();
+    }
+  });
+})();
     </script>
 </body>
 </html>
+
 
 
 
