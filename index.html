@@ -1141,9 +1141,9 @@
                     <textarea id="task-description" class="form-input" rows="4"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="task-deadline" class="form-label">Échéance</label>
-                    <input type="date" id="task-deadline" class="form-input">
-                </div>
+    <label for="task-deadline" class="form-label">Échéance</label>
+    <input type="datetime-local" id="task-deadline" class="form-input">
+</div>
 				<div class="form-group">
                     <label for="task-assignee" class="form-label">Assigné à</label>
                     <input type="text" id="task-assignee" class="form-input" required>
@@ -1315,8 +1315,8 @@ if (dossier.status === 'new') {
                 <td>${dossier.number}</td>
 				<td>${dossier.number2}</td>
                 <td>${dossier.name}</td>
-				<td>${dossier.clientName}</td>
-				<td>${dossier.adversaryName}</td>
+				<td>${formatTextWithLineBreaks(dossier.clientName)}</td>
+<td>${formatTextWithLineBreaks(dossier.adversaryName)}</td>
                 <td>${formatDate(dossier.audienceDate)}</td>
                 <td>${statusBadge}</td>
                 <td>
@@ -1417,11 +1417,11 @@ deleteBtn.addEventListener('click', (e) => {
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Client</span>
-                    <div class="detail-value">${dossier.clientName}</div>
+                    <div class="detail-value">${formatTextWithLineBreaks(dossier.clientName)}</div>
                 </div>
 				<div class="detail-item">
   <span class="detail-label">Adversaire</span>
-  <div class="detail-value">${dossier.adversaryName || 'Non renseigné'}</div>
+  <div class="detail-value">${formatTextWithLineBreaks(dossier.adversaryName) || 'Non renseigné'}</div>
 </div>
                 <div class="detail-item">
                     <span class="detail-label">Téléphone</span>
@@ -1467,7 +1467,7 @@ deleteBtn.addEventListener('click', (e) => {
                 <div class="task-info">
                     <h4>${task.title}</h4>
                     <p>${task.description || ''}</p>
-                    ${task.deadline ? `<small>Échéance: ${formatDate(task.deadline)}</small>` : ''}
+                    ${task.deadline ? `<small>Échéance: ${formatDateTimeForDisplay(task.deadline)}</small>` : ''}
 					<p>${task.assignee || ''}</p>
                 </div>
                 <div class="task-actions">
@@ -1489,6 +1489,19 @@ deleteBtn.addEventListener('click', (e) => {
 
             tasksList.appendChild(item);
         }
+
+		// Fonction pour formater la date et l'heure pour l'affichage
+function formatDateTimeForDisplay(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
 
         // Load history from Firebase
         function loadHistory() {
@@ -1852,6 +1865,13 @@ function handleStandby(id) {
             return diffDays > 0 && diffDays <= 7;
         }
 
+		// Fonction pour formater le texte avec les retours à la ligne
+function formatTextWithLineBreaks(text) {
+    if (!text) return '';
+    // Remplacer les retours à la ligne par des balises <br>
+    return text.replace(/\n/g, '<br>');
+}
+
         // Event Listeners
         // Login/Logout
         loginForm.addEventListener('submit', e => {
@@ -2085,6 +2105,7 @@ document.addEventListener('keydown', function(e) {
     </script>
 </body>
 </html>
+
 
 
 
